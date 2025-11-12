@@ -59,3 +59,4 @@ obj/
 .vscode/
 appsettings.Development.json
 *.secret.json
+DevWorkTracker.Tests/
