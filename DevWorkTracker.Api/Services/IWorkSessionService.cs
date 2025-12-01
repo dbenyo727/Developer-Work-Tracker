@@ -9,4 +9,6 @@ public interface IWorkSessionService
     WorkSession StopSession(int id);
     IDictionary<string, double> GetDurationByProject();
     IDictionary<string, double> GetDurationByLanguage();
+    IDictionary<string, double> GetProjectByID();
+    IEnumerable<IDictionary<string, double>> GetAllProjectsAndDuration();
 }

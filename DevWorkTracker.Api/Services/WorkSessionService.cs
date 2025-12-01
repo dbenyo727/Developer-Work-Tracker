@@ -23,7 +23,7 @@ public class WorkSessionService : IWorkSessionService
             Id = _nextId++,
             ProjectName = projectName,
             Language = language,
-            Description = description,
+            SessionDesc = description,
             StartedAt = DateTime.UtcNow
         };
 
@@ -44,7 +44,35 @@ public class WorkSessionService : IWorkSessionService
         session.DurationMinutes = (session.EndedAt.Value - session.StartedAt).TotalMinutes;
         return session;
     }
+    public IEnumerable<IDictionary<string, double>> GetAllProjectsAndDuration()
+    {
+        var ReturnList = new List<IDictionary<string, double>>();
 
+        foreach (WorkSession w in _sessions)
+        {
+            if (ReturnList.Count == 0)
+            {
+                ReturnList.Add(new Dictionary<string, double> { { w.ProjectName, w.DurationMinutes } });
+            }
+            else
+            {
+                foreach (IDictionary<string, double> i in ReturnList)
+                {
+                    if (i.ContainsKey(w.ProjectName))
+                    {
+                        i[w.ProjectName] += w.DurationMinutes;
+                        break;
+                    }
+                    else
+                    {
+                        ReturnList.Add(new Dictionary<string, double> { { w.ProjectName, w.DurationMinutes } });
+                        break;
+                    }
+                }
+            }
+        }
+        return ReturnList;
+    }
     //Identifier is project name, shows total minutes for that specific project
     public IDictionary<string, double> GetDurationByProject()
     {
@@ -86,5 +114,10 @@ public class WorkSessionService : IWorkSessionService
         }
 
         return result;
+    }
+
+    public IDictionary<string, double> GetProjectByID()
+    {
+        return null;
     }
 }

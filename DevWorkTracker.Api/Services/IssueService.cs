@@ -3,7 +3,6 @@ using DevWorkTracker.Api.Models;
 
 namespace DevWorkTracker.Api.Services;
 
-                        // this is the interface, anything of IIssueservice most have the following properties.
                         //class issueservice must implement interface. this class must provide all methods from iissueservice
 public class IssueService : IIssueService
 {
@@ -32,7 +31,6 @@ public class IssueService : IIssueService
     }
     public Issue UpdateStatus(int id, IssueStatus status)
     {
-        //pls more on singleordefault, and ??
         var issue = _issues.SingleOrDefault(i => i.Id == id)
             ?? throw new KeyNotFoundException($"Issue {id} not found");
 

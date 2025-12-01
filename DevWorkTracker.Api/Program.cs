@@ -1,11 +1,13 @@
 using DevWorkTracker.Api.Services;
 using DevWorkTracker.Api.Models;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //singleton==> we only want one instance of each per application run
 builder.Services.AddSingleton<IWorkSessionService, WorkSessionService>();
 builder.Services.AddSingleton<IIssueService, IssueService>();
+builder.Services.AddSingleton<IProjectRepository, ProjectRepository>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -31,15 +33,12 @@ app.MapGet("/sessions", (IWorkSessionService service) =>
     return Results.Ok(service.GetAll());
 });
 
-//server only knows when you send a POST    to /sessions/start with this JSON body
-//                          //   | this is bound from JSON  | This is resolved from
-//   V request body             V  dependency injection (DI)
 app.MapPost("/sessions/start", (IWorkSessionService service, SessionStartRequest request) =>
 {
     var session = service.StartSession(request.ProjectName, request.Language, request.Description);
     return Results.Created($"/sessions/{session.Id}", session); //
 });
-// ASP.NET does not care what string is here
+
 app.MapPost("/sessions/{id:int}/stop", (IWorkSessionService service, int id) =>
 {
     var session = service.StopSession(id);
@@ -48,7 +47,7 @@ app.MapPost("/sessions/{id:int}/stop", (IWorkSessionService service, int id) =>
 
 app.MapGet("/sessions/summary/projects", (IWorkSessionService service) =>
 {
-    return Results.Ok(service.GetDurationByProject());
+    return Results.Ok(service.GetAllProjectsAndDuration());
 });
 
 app.MapGet("/sessions/summary/languages", (IWorkSessionService service) =>
@@ -72,5 +71,29 @@ app.MapPatch("/issues/{id:int}/status", (IIssueService service, int id, IssueSta
     var issue = service.UpdateStatus(id, request.Status);
     return Results.Ok(issue);
 });
+
+app.MapGet("/projects", (IProjectRepository service) =>
+{
+    service.TestFilePath();
+    return Results.Ok(service.GetAll());
+});
+app.MapPost("project create", (IProjectRepository service, string name, string desc) =>
+{
+    var proj = service.CreateNew(name, desc);
+    return Results.Ok(proj);
+});
+
+//RUN ON STARTUP
+using (var scope = app.Services.CreateScope())
+{
+    Console.WriteLine("Chicken Micken");
+
+    var repo = scope.ServiceProvider.GetRequiredService<IProjectRepository>();
+
+    //make sure file path is accurate
+    repo.TestFilePath();
+    repo.SortProjects();
+}
+// using block is for returning IDisposable; scope.Dispose()
 
 app.Run();
